@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Nicest Place</title>
+  <!-- 
+    ========================================================================
+    THE NICEST PLACE - A virtual hugs experience from Skövde
+    
+    This website displays a YouTube playlist of heartwarming videos with
+    background music, creating a peaceful and uplifting experience.
+    
+    Key features:
+    - Landing page with animated gradient background
+    - Background music that plays automatically
+    - YouTube playlist integration with custom controls
+    - Horizontal translucent bar to hide YouTube UI elements
+    - Responsive design for all devices
+    ========================================================================
+  -->
+  
+  <!-- Import Google Fonts - Montserrat (extra light) and Open Sans (light) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300&family=Open+Sans:wght@300&display=swap" rel="stylesheet">
+  <style>
+    /* 
+      =======================================================================
+      GLOBAL STYLES AND RESET
+      =======================================================================
+    */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Montserrat', 'Open Sans', sans-serif;
+      font-weight: 200; /* Extra light weight */
+    }
+    
+    /* 
+      =======================================================================
+      ANIMATIONS
+      =======================================================================
+    */
+    /* Animated gradient background for landing page */
+    @keyframes gradientAnimation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    
+    /* Heart pulse animation for main heart */
+    .heart-pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Sound wave animation */
+    @keyframes sound-wave-animation {
+      0% { height: 3px; }
+      50% { height: 20px; }
+      100% { height: 3px; }
+    }
+    
+    /* 
+      =======================================================================
+      MEDIA PLAYERS
+      =======================================================================
+    */
+    /* YouTube player container */
+    #player {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none; /* Prevents clicks on YouTube player */
+    }
+    
+    /* Audio player for background music */
+    #audio-player {
+      display: block; /* Ensures it's accessible for autoplay */
+    }
+    
+    /* 
+      =======================================================================
+      LANDING PAGE OVERLAY
+      =======================================================================
+    */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(-45deg, #FFB6C1, #FFC0CB, #E6E6FA, #ADD8E6, #D8BFD8, #FADADD);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      color: #333; /* Darker text for better contrast */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+    
+    #overlay-content {
+      text-align: center; /* Center align text */
+      width: 100%;
+      max-width: 800px;
+      padding: 20px;
+    }
+    
+    #overlay h1 {
+      font-size: 2.5em;
+      margin: 0.5em 0;
+      font-weight: 200; /* Extra light weight */
+      color: #333;
+      letter-spacing: 0.5px; /* Slightly increase letter spacing for elegance */
+    }
+    
+    #overlay p.medium-text {
+      font-size: 1.2em;
+      margin: 0.5em auto; /* Center align with auto margins */
+      max-width: 80%;
+      color: #555;
+      font-weight: 300; /* Light weight */
+    }
+    
+    #overlay p.small-text {
+      font-size: 0.9em;
+      margin: 0.3em auto; /* Center align with auto margins */
+      opacity: 0.8;
+      color: #777;
+      font-weight: 300; /* Light weight */
+    }
+    
+    #overlay .cta {
+      margin-top: 30px;
+      font-size: 1.3em;
+      color: #333;
+      padding: 10px 20px;
+      border-radius: 30px;
+      transition: color 0.3s ease;
+      font-weight: 300; /* Light weight */
+    }
+    
+    #overlay:hover .cta {
+      color: #4a90e2; /* Light blue highlight on hover */
+    }
+    
+    /* 
+      =======================================================================
+      TOP BAR OVERLAY
+      =======================================================================
+    */
+    /* Horizontal translucent bar at the top - hides YouTube UI elements */
+    #top-bar {
+      display: none; /* Initially hidden, shown after clicking overlay */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px; /* Thick enough to hide YouTube popups */
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 15;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+    
+    /* Left side of top bar with heart and text */
+    #top-bar-left {
+      display: flex;
+      align-items: center;
+      color: white;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      max-width: 60%;
+    }
+    
+    #top-bar-left .heart {
+      font-size: 1.5em;
+      margin-right: 10px;
+    }
+    
+    #top-bar-left .text {
+      font-weight: 300;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Right side of top bar with buttons */
+    #top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Top bar navigation buttons */
+    .top-bar-button {
+      display: inline-block;
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 1em;
+      cursor: pointer;
+      outline: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', 'Open Sans', sans-serif;
+      font-weight: 300;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .top-bar-button:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    
+    /* 
+      =======================================================================
+      MUSIC CONTROL
+      =======================================================================
+    */
+    /* Music control button in bottom left */
+    #music-control {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 20;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    #music-control:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+      transform: scale(1.1);
+    }
+    
+    /* Sound wave animation for music icon */
+    .sound-wave {
+      display: inline-block;
+      position: relative;
+      width: 24px;
+      height: 24px;
+    }
+    
+    .sound-wave span {
+      position: absolute;
+      bottom: 0;
+      width: 3px;
+      background-color: white;
+      border-radius: 3px;
+    }
+    
+    /* Sound wave bars with different animations */
+    .sound-wave span:nth-child(1) {
+      left: 0;
+      animation: sound-wave-animation 1.2s infinite ease-in-out;
+      height: 10px;
+    }
+    
+    .sound-wave span:nth-child(2) {
+      left: 6px;
+      animation: sound-wave-animation 1.6s infinite ease-in-out;
+      height: 16px;
+    }
+    
+    .sound-wave span:nth-child(3) {
+      left: 12px;
+      animation: sound-wave-animation 1.4s infinite ease-in-out;
+      height: 20px;
+    }
+    
+    .sound-wave span:nth-child(4) {
+      left: 18px;
+      animation: sound-wave-animation 1.8s infinite ease-in-out;
+      height: 14px;
+    }
+    
+    /* Muted state for music control */
+    .muted .sound-wave span {
+      animation: none;
+      height: 3px !important;
+    }
+    
+    .muted .sound-wave::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background-color: white;
+      top: 50%;
+      left: 0;
+      transform: rotate(-45deg);
+    }
+    
+    /* 
+      =======================================================================
+      VIDEO CONTROL BUTTONS
+      =======================================================================
+    */
+    /* Container for video control buttons */
+    #controls {
+      display: none; /* Initially hidden, shown after clicking overlay */
+      position: fixed;
+      bottom: 30px;
+      left: 0;
+      right: 0;
+      z-index: 15;
+      text-align: center;
+      width: 100%;
+      white-space: nowrap; /* Ensure buttons stay on one line */
+    }
+    
+    .control-buttons-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .control-button-container {
+      flex: 1;
+      margin: 0 15px;
+      text-align: center;
+      max-width: 350px; /* Increased for better spacing with only 2 buttons */
+    }
+    
+    .control-button {
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 0.9em;
+      cursor: pointer;
+      outline: none;
+      padding: 10px 18px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', 'Open Sans', sans-serif;
+      font-weight: 300;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 300px;
+      white-space: normal; /* Allow text to wrap if needed */
+      min-height: 44px; /* Ensure consistent height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .control-button:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    
+    /* 
+      =======================================================================
+      YOUTUBE UI HIDING
+      =======================================================================
+    */
+    /* Hide YouTube overlay elements */
+    .ytp-chrome-top {
+      display: none !important;
+    }
+    .ytp-chrome-top-buttons {
+      display: none !important;
+    }
+    .ytp-title {
+      display: none !important;
+    }
+    .ytp-show-cards-title {
+      display: none !important;
+    }
+    .ytp-pause-overlay {
+      display: none !important;
+    }
+    .ytp-youtube-button {
+      display: none !important;
+    }
+    .ytp-watermark {
+      display: none !important;
+    }
+    
+    /* 
+      =======================================================================
+      RESPONSIVE DESIGN
+      =======================================================================
+    */
+    /* Responsive adjustments for mobile devices */
+    @media (max-width: 768px) {
+      /* Stack top bar elements vertically on mobile */
+      #top-bar {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+      }
+      
+      #top-bar-left {
+        max-width: 100%;
+        margin-bottom: 10px;
+        justify-content: center;
+      }
+      
+      #top-bar-right {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .top-bar-button {
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+      
+      /* Stack control buttons vertically on mobile */
+      .control-buttons-wrapper {
+        flex-direction: column;
+      }
+      
+      .control-button-container {
+        margin: 5px 0;
+        width: 90%;
+        max-width: none;
+      }
+      
+      .control-button {
+        width: 100%;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 
+    =======================================================================
+    LANDING PAGE OVERLAY
+    This is the initial screen users see before starting the experience
+    =======================================================================
+  -->
+  <div id="overlay" onclick="startExperience()">
+    <div id="overlay-content">
+      <div style="font-size: 4em;" class="heart-pulse">❤️</div>
+      <h1>For when you need it, just hugs.<br>From the nicest people in Skövde.</h1>
+      <p class="medium-text">These hugs has been quality-checked by 3 grandmas and a puppy 🐶</p>
+      <p class="small-text">(Skövde's Department of Snuggles has approved this message.)</p>
+      <div class="cta">come on in</div>
+    </div>
+  </div>
+
+  <!-- 
+    =======================================================================
+    HORIZONTAL TRANSLUCENT BAR
+    Appears at the top after clicking the overlay, hides YouTube UI elements
+    =======================================================================
+  -->
+  <div id="top-bar">
+    <div id="top-bar-left">
+      <div class="heart">❤️</div>
+      <div class="text">Skövde hugs: scientifically tested on real Swedes. Moose approval still in progress.</div>
+    </div>
+    <div id="top-bar-right">
+      <button class="top-bar-button" onclick="showAboutUs()">About Us</button>
+      <button class="top-bar-button" onclick="giveAHug()">Give a Hug</button>
+    </div>
+  </div>
+
+  <!-- 
+    =======================================================================
+    MUSIC CONTROL
+    Button to toggle background music on/off
+    =======================================================================
+  -->
+  <div id="music-control" onclick="toggleMusic()">
+    <div class="sound-wave">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- 
+    =======================================================================
+    VIDEO CONTROLS
+    Buttons to navigate through the YouTube playlist
+    =======================================================================
+  -->
+  <div id="controls">
+    <div class="control-buttons-wrapper">
+      <div class="control-button-container">
+        <button class="control-button" onclick="previousVideo()">Wait, I Liked That One!</button>
+      </div>
+      <div class="control-button-container">
+        <button class="control-button" onclick="shuffleVideos()">Let the Universe Pick My Hug</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 
+    =======================================================================
+    MEDIA PLAYERS
+    YouTube player and audio player for background music
+    =======================================================================
+  -->
+  <div id="player"></div>
+  <audio id="audio-player" loop>
+    <source src="audio/MyBrightestDiamond-IHaveNeverLovedSomeoneATakeAwayShow.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    /**
+     * =======================================================================
+     * CONFIGURATION
+     * =======================================================================
+     */
+    
+    // YouTube playlist ID - CHANGE THIS TO USE A DIFFERENT PLAYLIST
+    // This is the most important setting to modify if you want to change videos
+    const playlistId = "PLUWjLblS8gxH8q1xMC4GmfFU83gK7yd07";
+    
+    // Global variables
+    let player;                 // YouTube player instance
+    let ytReady = false;        // Flag to track if YouTube API is ready
+    const audioPlayer = document.getElementById("audio-player");  // Background music player
+    let isPlaying = true;       // Flag to track if videos are playing
+    let isMusicMuted = false;   // Flag to track if background music is muted
+    
+    // Set initial audio volume
+    audioPlayer.volume = 1.0;
+    
+    /**
+     * =======================================================================
+     * MUSIC CONTROL FUNCTIONS
+     * =======================================================================
+     */
+    
+    /**
+     * Toggles the background music between muted and unmuted states
+     * Updates the visual state of the music control button
+     */
+    function toggleMusic() {
+      const musicControl = document.getElementById("music-control");
+      
+      if (isMusicMuted) {
+        // Unmute music
+        audioPlayer.volume = 1.0;
+        musicControl.classList.remove("muted");
+        isMusicMuted = false;
+      } else {
+        // Mute music
+        audioPlayer.volume = 0;
+        musicControl.classList.add("muted");
+        isMusicMuted = true;
+      }
+    }
+    
+    /**
+     * Attempts to play the background music
+     * Handles autoplay restrictions gracefully
+     */
+    function playAudio() {
+      const playPromise = audioPlayer.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Autoplay prevented, will try again on user interaction");
+        });
+      }
+    }
+    
+    /**
+     * =======================================================================
+     * UI INTERACTION FUNCTIONS
+     * =======================================================================
+     */
+    
+    /**
+     * Displays information about the website when "About Us" is clicked
+     */
+    function showAboutUs() {
+      alert("About Us: The Nicest Place on the Internet was created to spread joy and kindness through virtual hugs. Made with love in Skövde, Sweden.");
+    }
+    
+    /**
+     * Displays a message when "Give a Hug" is clicked
+     */
+    function giveAHug() {
+      alert("You just sent a virtual hug to someone who needed it! Thank you for spreading kindness.");
+    }
+    
+    /**
+     * =======================================================================
+     * YOUTUBE PLAYER FUNCTIONS
+     * =======================================================================
+     */
+    
+    /**
+     * Initializes the YouTube player with the specified playlist
+     * Sets up event handlers for player state changes
+     */
+    function initializePlayer() {
+      player = new YT.Player("player", {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          listType: 'playlist',
+          list: playlistId,      // Uses the playlist ID defined at the top
+          autoplay: 1,           // Autoplay when possible
+          controls: 0,           // Hide player controls
+          modestbranding: 1,     // Hide YouTube logo
+          rel: 0,                // Don't show related videos
+          showinfo: 0,           // Hide video info
+          fs: 0,                 // Disable fullscreen button
+          iv_load_policy: 3,     // Hide annotations
+          playsinline: 1,        // Play inline on mobile
+          loop: 1                // Loop the playlist
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+    
+    /**
+     * Handles the YouTube player ready event
+     * Sets initial volume, starts playback, and shows UI elements
+     */
+    function onPlayerReady(event) {
+      // Set volume to 1% of original
+      event.target.setVolume(1);
+      
+      // Ensure audio is playing
+      if (!isMusicMuted) {
+        audioPlayer.volume = 1.0;
+        playAudio();
+      }
+      
+      // Ensure video plays and is shuffled
+      event.target.setShuffle(true);
+      event.target.playVideo();
+      
+      // Show the top bar and controls
+      document.getElementById("top-bar").style.display = "flex";
+      document.getElementById("controls").style.display = "block";
+      
+      // Set a timer to check and ensure playback has started
+      setTimeout(() => {
+        if (event.target.getPlayerState() !== YT.PlayerState.PLAYING) {
+          event.target.playVideo();
+          // Ensure volume is still at 1%
+          event.target.setVolume(1);
+        }
+        
+        // Make sure audio is playing if not muted
+        if (audioPlayer.paused && isPlaying && !isMusicMuted) {
+          playAudio();
+        }
+        
+        // Try to hide YouTube UI elements
+        hideYouTubeUI();
+      }, 1000);
+    }
+    
+    /**
+     * Handles YouTube player state changes
+     * Ensures continuous playback and maintains volume settings
+     */
+    function onPlayerStateChange(event) {
+      // If video ends, force next video
+      if (event.data === YT.PlayerState.ENDED) {
+        player.nextVideo();
+        // Ensure volume is at 1% for next video
+        player.setVolume(1);
+        // Hide YouTube UI elements
+        hideYouTubeUI();
+      }
+      
+      // If video is cued but not playing, force play
+      if (event.data === YT.PlayerState.CUED) {
+        player.playVideo();
+        // Ensure volume is at 1%
+        player.setVolume(1);
+        // Hide YouTube UI elements
+        hideYouTubeUI();
+      }
+      
+      // For any state change, ensure volume is at 1%
+      player.setVolume(1);
+      
+      // Make sure audio is still playing if we're in playing state and not muted
+      if (audioPlayer.paused && isPlaying && !isMusicMuted) {
+        playAudio();
+      }
+      
+      // Try to hide YouTube UI elements again after state change
+      hideYouTubeUI();
+    }
+    
+    /**
+     * Attempts to hide YouTube UI elements through various methods
+     * Uses multiple approaches to overcome cross-origin restrictions
+     */
+    function hideYouTubeUI() {
+      try {
+        // Try to access the iframe and its content
+        const iframe = document.querySelector('#player iframe');
+        if (iframe) {
+          // Try to inject CSS to hide YouTube UI elements
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          if (iframeDoc) {
+            const style = iframeDoc.createElement('style');
+            style.textContent = `
+              .ytp-chrome-top, .ytp-chrome-top-buttons, .ytp-title, .ytp-show-cards-title, 
+              .ytp-youtube-button, .ytp-watermark, .ytp-iv-player-content, .ytp-cards-button,
+              .ytp-pause-overlay, .ytp-endscreen-content, .ytp-gradient-top, .ytp-gradient-bottom,
+              .ytp-ce-element, .ytp-ce-covering-overlay, .ytp-ce-element-shadow,
+              .ytp-ce-covering-image, .ytp-ce-expanding-image, .ytp-ce-element.ytp-ce-channel,
+              .ytp-ce-element.ytp-ce-video, .ytp-ce-element.ytp-ce-playlist {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+              }
+            `;
+            iframeDoc.head.appendChild(style);
+          }
+        }
+        
+        // Also try using YouTube API to hide info
+        if (player && player.getIframe) {
+          const playerIframe = player.getIframe();
+          if (playerIframe) {
+            // Add a class to the parent to help with CSS targeting
+            playerIframe.parentNode.classList.add('youtube-container');
+            
+            // Try to use YouTube Player API to hide title
+            if (player.hideVideoInfo) {
+              player.hideVideoInfo();
+            }
+          }
+        }
+      } catch (e) {
+        console.log("Could not fully hide YouTube UI elements due to cross-origin restrictions");
+      }
+      
+      // Set interval to periodically try hiding the elements
+      setInterval(() => {
+        try {
+          const iframe = document.querySelector('#player iframe');
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage('{"event":"command","func":"hideVideoInfo","args":""}', '*');
+            
+            // Additional attempt to hide elements by posting custom messages
+            iframe.contentWindow.postMessage(JSON.stringify({
+              event: 'command',
+              func: 'setOption',
+              args: ['modestbranding', 1]
+            }), '*');
+            
+            iframe.contentWindow.postMessage(JSON.stringify({
+              event: 'command',
+              func: 'setOption',
+              args: ['showinfo', 0]
+            }), '*');
+          }
+        } catch (e) {
+          // Silent catch - cross-origin restrictions may prevent this
+        }
+      }, 1000);
+    }
+    
+    /**
+     * =======================================================================
+     * VIDEO CONTROL FUNCTIONS
+     * =======================================================================
+     */
+    
+    /**
+     * Goes to the previous video in the playlist
+     */
+    function previousVideo() {
+      if (player && player.previousVideo) {
+        player.previousVideo();
+        // Hide YouTube UI elements after changing video
+        setTimeout(hideYouTubeUI, 100);
+      }
+    }
+    
+    /**
+     * Shuffles the playlist and plays a random video
+     */
+    function shuffleVideos() {
+      if (player && player.setShuffle) {
+        player.setShuffle(true);
+        // Force a new video to show the shuffle took effect
+        player.nextVideo();
+        // Hide YouTube UI elements after shuffling
+        setTimeout(hideYouTubeUI, 100);
+      }
+    }
+    
+    /**
+     * =======================================================================
+     * INITIALIZATION AND STARTUP
+     * =======================================================================
+     */
+    
+    /**
+     * Starts the experience when the overlay is clicked
+     * Hides the landing page and initializes the YouTube player
+     */
+    function startExperience() {
+      document.getElementById("overlay").style.display = "none";
+      
+      // Ensure audio is playing
+      playAudio();
+      
+      // If YouTube API is ready, initialize the player
+      if (ytReady) {
+        initializePlayer();
+      } else {
+        // If YouTube API is not ready yet, load it
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+    }
+    
+    /**
+     * Called when the YouTube API is ready
+     * Initializes the player if the user has already clicked the overlay
+     */
+    function onYouTubeIframeAPIReady() {
+      ytReady = true;
+      // If the user has already clicked, initialize the player
+      if (document.getElementById("overlay").style.display === "none") {
+        initializePlayer();
+      }
+    }
+    
+    /**
+     * Setup autoplay for background music
+     * Uses multiple strategies to overcome browser autoplay restrictions
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Show music control
+      document.getElementById("music-control").style.display = "flex";
+      
+      // Try to play audio immediately
+      playAudio();
+      
+      // Try again after short delays
+      setTimeout(playAudio, 500);
+      setTimeout(playAudio, 1000);
+      setTimeout(playAudio, 2000);
+      
+      // Add event listeners for user interaction to play audio
+      const startAudioOnInteraction = () => {
+        playAudio();
+      };
+      
+      document.addEventListener('click', startAudioOnInteraction);
+      document.addEventListener('touchstart', startAudioOnInteraction);
+      
+      // Also try on window focus
+      window.addEventListener('focus', playAudio);
+      
+      // And on visibility change
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          playAudio();
+        }
+      });
+    });
+    
+    // Load YouTube API
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(tag);
+    }
+  </script>
+</body>
+</html>
